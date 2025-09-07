@@ -94,7 +94,7 @@ Follow these steps precisely to ensure all dependencies are installed in the cor
 
 5.  **Create Environment File**
 
-    Create a file named `.env` in the root directory (`multilingual-voice-translator-realtime`) and add the following content:
+    Create a file named `.env` in the root directory (`local-multilingual-voice-translator`) and add the following content:
     ```    LM_STUDIO_BASE_URL=http://localhost:1234/v1
     LM_STUDIO_API_KEY=lm-studio
     WHISPER_MODEL=distil-whisper/distil-large-v3
