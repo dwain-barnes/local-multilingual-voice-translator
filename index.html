@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Multilingual Translator</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e2a5e 0%, #0f1829 100%);
+            --secondary-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            --background-light: #ffffff;
+            --background-subtle: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --eryri-navy: #1e2a5e;
+            --eryri-green: #4ade80;
+            --eryri-light: #dbeafe;
+            --tts-active: #8b5cf6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .company-logo {
+            height: 120px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: white;
+            opacity: 0.95;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            opacity: 0.8;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto 1rem;
+        }
+        
+        .company-link {
+            margin-top: 1rem;
+        }
+        
+        .company-link a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .company-link a:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: -2rem auto 0;
+            padding: 0 2rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .transcription-card {
+            background: var(--background-light);
+            border-radius: 16px;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: var(--secondary-gradient);
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .transcript-area {
+            padding: 2rem;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: var(--background-light);
+        }
+        
+        .transcript-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        .transcript-placeholder svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .transcript-placeholder h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .transcript-item {
+            margin: 1rem 0;
+            padding: 1.25rem;
+            background: var(--background-subtle);
+            border-radius: 12px;
+            border-left: 4px solid var(--eryri-green);
+            line-height: 1.6;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            animation: fadeInUp 0.3s ease;
+            position: relative;
+        }
+        
+        .transcript-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+            background: #f0fdf4;
+        }
+        
+        .transcript-item.tts-playing {
+            border-left-color: var(--tts-active);
+            background: #faf5ff;
+        }
+        
+        .tts-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--tts-active);
+            font-size: 0.8rem;
+        }
+        
+        .tts-indicator.active {
+            display: flex;
+        }
+        
+        .tts-speaker-icon {
+            width: 16px;
+            height: 16px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .controls-section {
+            padding: 2rem;
+            background: var(--secondary-gradient);
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .control-group {
+            text-align: left;
+        }
+        
+        .control-group h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .control-row label {
+            font-weight: 500;
+            color: var(--text-primary);
+            min-width: 80px;
+            font-size: 0.9rem;
+        }
+        
+        .language-dropdown, .tts-dropdown {
+            background: var(--background-light);
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
+            min-width: 150px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .language-dropdown:hover, .tts-dropdown:hover {
+            border-color: var(--eryri-navy);
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .language-dropdown:focus, .tts-dropdown:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .tts-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tts-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--tts-active);
+        }
+        
+        .tts-status {
+            margin-left: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .tts-status.enabled {
+            background: #f3e8ff;
+            color: var(--tts-active);
+        }
+        
+        .tts-status.disabled {
+            background: #f1f5f9;
+            color: var(--text-secondary);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .record-button, .save-button {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            position: relative;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .save-button {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            min-width: 180px;
+        }
+        
+        .save-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .record-button:hover:not(:disabled), .save-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+        
+        .record-button:active, .save-button:active {
+            transform: translateY(0);
+        }
+        
+        .record-button:disabled, .save-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .button-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .mute-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+        
+        .mute-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .mute-toggle svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow-medium);
+            backdrop-filter: blur(10px);
+        }
+        
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .toast.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        
+        .toast.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .toast.tts {
+            background: linear-gradient(135deg, var(--tts-active) 0%, #7c3aed 100%);
+            color: white;
+        }
+        
+        /* Custom scrollbar */
+        .transcript-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .transcript-area::-webkit-scrollbar-track {
+            background: var(--background-subtle);
+            border-radius: 3px;
+        }
+        
+        .transcript-area::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 3px;
+            transition: background 0.2s ease;
+        }
+        
+        .transcript-area::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 3rem 1rem;
+            }
+            
+            .company-logo {
+                height: 80px;
+            }
+            
+            .header h2 {
+                font-size: 1.25rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .main-container {
+                padding: 0 1rem 3rem;
+                margin-top: -1.5rem;
+            }
+            
+            .card-header,
+            .transcript-area,
+            .controls-section {
+                padding: 1.5rem;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .control-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .control-row label {
+                min-width: auto;
+            }
+            
+            .language-dropdown, .tts-dropdown {
+                min-width: 100%;
+                max-width: 300px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .record-button, .save-button {
+                padding: 0.875rem 2rem;
+                min-width: 180px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="error-toast" class="toast"></div>
+    
+    <header class="header">
+        <div class="header-content">
+    
+            <h2>🌍 AI Multilingual Voice Translator</h2>
+            <p>Powered by LM Studio + Chatterbox TTS • Supporting 23+ Languages</p>
+
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="transcription-card">
+            <div class="card-header">
+                <h2>AI Multilingual Translation</h2>
+                <p>Speak in any supported language and hear translations with natural voice synthesis</p>
+            </div>
+            
+            <div class="transcript-area" id="transcript">
+                <div class="transcript-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                    <h3>Ready to translate</h3>
+                    <p>Select your languages and start speaking to see translations appear here</p>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                            Source Language
+                        </h3>
+                        <div class="control-row">
+                            <label>From:</label>
+                            <select id="source-language" class="language-dropdown">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="it">Italian</option>
+                                <option value="pt">Portuguese</option>
+                                <option value="ru">Russian</option>
+                                <option value="zh">Chinese</option>
+                                <option value="ja">Japanese</option>
+                                <option value="ko">Korean</option>
+                                <option value="ar">Arabic</option>
+                                <option value="hi">Hindi</option>
+                                <option value="tr">Turkish</option>
+                                <option value="pl">Polish</option>
+                                <option value="nl">Dutch</option>
+                                <option value="sv">Swedish</option>
+                                <option value="no">Norwegian</option>
+                                <option value="da">Danish</option>
+                                <option value="fi">Finnish</option>
+                                <option value="el">Greek</option>
+                                <option value="he">Hebrew</option>
+                                <option value="ms">Malay</option>
+                                <option value="sw">Swahili</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                                <path d="M3 3h6l6 18h6"/>
+                                <path d="M14 9h7"/>
+                            </svg>
+                            Target Language
+                        </h3>
+                        <div class="control-row">
+                            <label>To:</label>
+                            <select id="target-language" class="language-dropdown">
+                                <option value="es">Spanish</option>
+                                <option value="ar">Arabic</option>
+                                <option value="zh">Chinese</option>
+                                <option value="da">Danish</option>
+                                <option value="nl">Dutch</option>
+                                <option value="en">English</option>
+                                <option value="fi">Finnish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="el">Greek</option>
+                                <option value="he">Hebrew</option>
+                                <option value="hi">Hindi</option>
+                                <option value="it">Italian</option>
+                                <option value="ja">Japanese</option>
+                                <option value="ko">Korean</option>
+                                <option value="ms">Malay</option>
+                                <option value="no">Norwegian</option>
+                                <option value="pl">Polish</option>
+                                <option value="pt">Portuguese</option>
+                                <option value="ru">Russian</option>
+                                <option value="sv">Swedish</option>
+                                <option value="sw">Swahili</option>
+                                <option value="tr">Turkish</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <h3>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                                <polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"/>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                            </svg>
+                            Voice Synthesis
+                        </h3>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                            <label class="tts-toggle">
+                                <input type="checkbox" id="tts-enabled" class="tts-checkbox">
+                                Enable Speech
+                            </label>
+                            <span id="tts-status" class="tts-status disabled">Disabled</span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; text-align: center;">
+                            Powered by Chatterbox TTS
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="start-button" class="record-button">Start Recording</button>
+                    <button id="save-button" class="save-button" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Save Translation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let peerConnection;
+        let webrtc_id;
+        let audioContext, analyser, audioSource;
+        let audioLevel = 0;
+        let animationFrame;
+        let isMuted = false;
+        let transcriptData = [];
+        let ttsEventSource = null;
+        
+        const startButton = document.getElementById('start-button');
+        const saveButton = document.getElementById('save-button');
+        const transcriptDiv = document.getElementById('transcript');
+        const ttsEnabled = document.getElementById('tts-enabled');
+        const ttsStatus = document.getElementById('tts-status');
+        const sourceLanguage = document.getElementById('source-language');
+        const targetLanguage = document.getElementById('target-language');
+        
+        // SVG Icons
+        const micIconSVG = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>`;
+        const micMutedIconSVG = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>`;
+
+        const speakerIconSVG = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5,6 9,2 9,2 15,6 15,11 19,11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>`;
+
+        // TTS functionality
+        function updateTTSStatus() {
+            if (ttsEnabled.checked) {
+                ttsStatus.textContent = 'Enabled';
+                ttsStatus.className = 'tts-status enabled';
+            } else {
+                ttsStatus.textContent = 'Disabled';
+                ttsStatus.className = 'tts-status disabled';
+            }
+        }
+
+        function showTTSToast(message) {
+            const toast = document.getElementById('error-toast');
+            toast.textContent = message;
+            toast.className = 'toast tts';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        async function playTTSAudio(audioData) {
+            try {
+                // Convert base64 to audio blob
+                const audioBytes = atob(audioData.audio);
+                const audioBuffer = new ArrayBuffer(audioBytes.length);
+                const audioView = new Uint8Array(audioBuffer);
+                for (let i = 0; i < audioBytes.length; i++) {
+                    audioView[i] = audioBytes.charCodeAt(i);
+                }
+                
+                const audioBlob = new Blob([audioBuffer], { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Create and play audio
+                const audio = new Audio(audioUrl);
+                
+                // Show visual feedback
+                const lastTranscriptItem = transcriptDiv.querySelector('.transcript-item:last-child');
+                if (lastTranscriptItem) {
+                    const ttsIndicator = lastTranscriptItem.querySelector('.tts-indicator');
+                    if (ttsIndicator) {
+                        ttsIndicator.classList.add('active');
+                        lastTranscriptItem.classList.add('tts-playing');
+                    }
+                }
+                
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
+                    // Remove visual feedback
+                    if (lastTranscriptItem) {
+                        const ttsIndicator = lastTranscriptItem.querySelector('.tts-indicator');
+                        if (ttsIndicator) {
+                            ttsIndicator.classList.remove('active');
+                            lastTranscriptItem.classList.remove('tts-playing');
+                        }
+                    }
+                };
+                
+                audio.onerror = (e) => {
+                    console.error('TTS audio playback error:', e);
+                    URL.revokeObjectURL(audioUrl);
+                };
+                
+                await audio.play();
+                
+            } catch (error) {
+                console.error('Error playing TTS audio:', error);
+                showError('Failed to play TTS audio');
+            }
+        }
+
+        function setupTTSStream() {
+            if (!webrtc_id || ttsEventSource) return;
+            
+            console.log('Setting up TTS audio stream...');
+            ttsEventSource = new EventSource('/tts_audio?webrtc_id=' + webrtc_id);
+            
+            ttsEventSource.addEventListener("audio", async (event) => {
+                try {
+                    const audioData = JSON.parse(event.data);
+                    console.log('Received TTS audio data');
+                    await playTTSAudio(audioData);
+                } catch (error) {
+                    console.error('Error processing TTS audio:', error);
+                }
+            });
+            
+            ttsEventSource.onerror = (error) => {
+                console.error('TTS EventSource error:', error);
+            };
+        }
+
+        function closeTTSStream() {
+            if (ttsEventSource) {
+                ttsEventSource.close();
+                ttsEventSource = null;
+                console.log('TTS stream closed');
+            }
+        }
+
+        // Event listeners for controls
+        ttsEnabled.addEventListener('change', () => {
+            updateTTSStatus();
+            sendSettings();
+            if (ttsEnabled.checked) {
+                showTTSToast('Speech synthesis enabled');
+            }
+        });
+
+        sourceLanguage.addEventListener('change', sendSettings);
+        targetLanguage.addEventListener('change', sendSettings);
+
+        function showError(message) {
+            const toast = document.getElementById('error-toast');
+            toast.textContent = message;
+            toast.className = 'toast error';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 5000);
+        }
+
+        function showWarning(message) {
+            const toast = document.getElementById('error-toast');
+            toast.textContent = message;
+            toast.className = 'toast warning';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 5000);
+        }
+
+        function saveTranscript() {
+            if (transcriptData.length === 0) {
+                showWarning('No translation data to save');
+                return;
+            }
+
+            // Create transcript content with timestamp and settings
+            const now = new Date();
+            const timestamp = now.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const sourceLangText = sourceLanguage.options[sourceLanguage.selectedIndex].text;
+            const targetLangText = targetLanguage.options[targetLanguage.selectedIndex].text;
+            
+            let content = `🌍 EryriLabs - AI Multilingual Voice Translator\n`;
+            content += `Generated: ${timestamp}\n`;
+            content += `Translation: ${sourceLangText} → ${targetLangText}\n`;
+            content += `TTS Enabled: ${ttsEnabled.checked ? 'Yes' : 'No'}\n`;
+            content += `Total translations: ${transcriptData.length}\n`;
+            content += `Powered by: LM Studio + Distil-Whisper + Chatterbox TTS\n`;
+            content += `Visit: https://www.eryrilabs.com\n`;
+            content += `${'='.repeat(50)}\n\n`;
+            
+            transcriptData.forEach((item, index) => {
+                content += `[${index + 1}] ${item.timestamp}: ${item.text}\n\n`;
+            });
+
+            // Create and download file
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            
+            const filename = `eryrilabs-translation-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.txt`;
+            
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showSuccess(`Translation saved as ${filename}`);
+        }
+
+        function showSuccess(message) {
+            const toast = document.getElementById('error-toast');
+            toast.textContent = message;
+            toast.className = 'toast success';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateSaveButtonVisibility() {
+            if (transcriptData.length > 0) {
+                saveButton.style.display = 'flex';
+            } else {
+                saveButton.style.display = 'none';
+            }
+        }
+
+        async function handleMessage(event) {
+            const eventJson = JSON.parse(event.data);
+            if (eventJson.type === "error") {
+                showError(eventJson.message);
+            } else if (eventJson.type === "send_input") {
+                sendSettings();
+            }
+            console.log('Received message:', event.data);
+        }
+
+        function updateButtonState() {
+            // Remove existing mute listener if present
+            const existingMuteButton = startButton.querySelector('.mute-toggle');
+            if (existingMuteButton) {
+                existingMuteButton.removeEventListener('click', toggleMute);
+                existingMuteButton.remove();
+            }
+
+            if (peerConnection && (peerConnection.connectionState === 'connecting' || peerConnection.connectionState === 'new')) {
+                startButton.innerHTML = `
+                    <div class="button-content">
+                        <div class="spinner"></div>
+                        <span>Connecting...</span>
+                    </div>
+                `;
+                startButton.disabled = true;
+            } else if (peerConnection && peerConnection.connectionState === 'connected') {
+                startButton.innerHTML = `
+                    <div class="button-content">
+                        <div class="status-indicator"></div>
+                        <span>Stop Recording</span>
+                    </div>
+                    <div class="mute-toggle" title="${isMuted ? 'Unmute' : 'Mute'}">
+                        ${isMuted ? micMutedIconSVG : micIconSVG}
+                    </div>
+                `;
+                startButton.disabled = false;
+                const muteButton = startButton.querySelector('.mute-toggle');
+                if (muteButton) {
+                    muteButton.addEventListener('click', toggleMute);
+                }
+            } else {
+                startButton.innerHTML = 'Start Recording';
+                startButton.disabled = false;
+            }
+        }
+
+        function toggleMute(event) {
+            event.stopPropagation();
+            if (!peerConnection || peerConnection.connectionState !== 'connected') return;
+            
+            isMuted = !isMuted;
+            console.log("Mute toggled:", isMuted);
+            
+            peerConnection.getSenders().forEach(sender => {
+                if (sender.track && sender.track.kind === 'audio') {
+                    sender.track.enabled = !isMuted;
+                    console.log(`Audio track ${sender.track.id} enabled: ${!isMuted}`);
+                }
+            });
+            updateButtonState();
+        }
+
+        function setupAudioVisualization(stream) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            audioSource = audioContext.createMediaStreamSource(stream);
+            audioSource.connect(analyser);
+            analyser.fftSize = 64;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            function updateAudioLevel() {
+                analyser.getByteFrequencyData(dataArray);
+                const average = Array.from(dataArray).reduce((a, b) => a + b, 0) / dataArray.length;
+                audioLevel = average / 255;
+                
+                const statusIndicator = document.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    const scale = 1 + (audioLevel * 0.5);
+                    statusIndicator.style.transform = `scale(${scale})`;
+                }
+                animationFrame = requestAnimationFrame(updateAudioLevel);
+            }
+            updateAudioLevel();
+        }
+
+        async function setupWebRTC() {
+            const config = __RTC_CONFIGURATION__;
+            peerConnection = new RTCPeerConnection(config);
+            
+            const timeoutId = setTimeout(() => {
+                showWarning("Connection is taking longer than usual. Are you on a VPN?");
+            }, 5000);
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+                
+                setupAudioVisualization(stream);
+                stream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, stream);
+                });
+
+                peerConnection.addEventListener('connectionstatechange', () => {
+                    console.log('connectionstatechange', peerConnection.connectionState);
+                    if (peerConnection.connectionState === 'connected') {
+                        clearTimeout(timeoutId);
+                        const toast = document.getElementById('error-toast');
+                        toast.style.display = 'none';
+                        
+                        // Send initial settings when connected
+                        sendSettings();
+                        // Setup TTS stream
+                        setupTTSStream();
+                    }
+                    updateButtonState();
+                });
+
+                peerConnection.onicecandidate = ({ candidate }) => {
+                    if (candidate) {
+                        console.debug("Sending ICE candidate", candidate);
+                        fetch('/webrtc/offer', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                candidate: candidate.toJSON(),
+                                webrtc_id: webrtc_id,
+                                type: "ice-candidate",
+                            })
+                        })
+                    }
+                };
+
+                const dataChannel = peerConnection.createDataChannel('text');
+                dataChannel.onmessage = handleMessage;
+
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                webrtc_id = Math.random().toString(36).substring(7);
+                
+                const response = await fetch('/webrtc/offer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sdp: peerConnection.localDescription.sdp,
+                        type: peerConnection.localDescription.type,
+                        webrtc_id: webrtc_id
+                    })
+                });
+
+                const serverResponse = await response.json();
+                if (serverResponse.status === 'failed') {
+                    showError(serverResponse.meta.error === 'concurrency_limit_reached'
+                        ? `Too many connections. Maximum limit is ${serverResponse.meta.limit}`
+                        : serverResponse.meta.error);
+                    stop();
+                    return;
+                }
+
+                await peerConnection.setRemoteDescription(serverResponse);
+
+                const eventSource = new EventSource('/transcript?webrtc_id=' + webrtc_id);
+                eventSource.addEventListener("transcript", (event) => {
+                    appendTranscript(event.data);
+                });
+
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.error('Error setting up WebRTC:', err);
+                showError('Failed to establish connection. Please check your microphone permissions and try again.');
+                stop();
+            }
+        }
+
+        function sendSettings() {
+            if (!webrtc_id || !peerConnection || peerConnection.connectionState !== 'connected') {
+                return;
+            }
+            
+            console.log('Sending settings:', {
+                tts: ttsEnabled.checked,
+                source: sourceLanguage.value,
+                target: targetLanguage.value
+            });
+            
+            fetch('/send_input', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    webrtc_id: webrtc_id,
+                    transcript: "",
+                    tts_enabled: ttsEnabled.checked,
+                    target_language: targetLanguage.value,
+                    source_language: sourceLanguage.value
+                })
+            }).catch(err => console.error('Error sending settings:', err));
+        }
+
+        function appendTranscript(text) {
+            // Remove placeholder if it exists
+            const placeholder = transcriptDiv.querySelector('.transcript-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            // Store transcript data with timestamp
+            const timestamp = new Date().toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            transcriptData.push({
+                text: text,
+                timestamp: timestamp,
+                datetime: new Date()
+            });
+
+            // Create and display transcript item
+            const transcriptItem = document.createElement('div');
+            transcriptItem.className = 'transcript-item';
+            transcriptItem.innerHTML = `
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${timestamp}</div>
+                <div>${text}</div>
+                <div class="tts-indicator">
+                    <div class="tts-speaker-icon">${speakerIconSVG}</div>
+                    Speaking...
+                </div>
+            `;
+            transcriptDiv.appendChild(transcriptItem);
+            transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+            
+            // Show save button now that we have content
+            updateSaveButtonVisibility();
+        }
+
+        function stop() {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            if (audioContext) {
+                audioContext.close().catch(e => console.error("Error closing AudioContext:", e));
+                audioContext = null;
+                analyser = null;
+                audioSource = null;
+            }
+            if (peerConnection) {
+                if (peerConnection.getSenders) {
+                    peerConnection.getSenders().forEach(sender => {
+                        if (sender.track) {
+                            sender.track.stop();
+                            console.log(`Track ${sender.track.id} stopped.`);
+                        }
+                    });
+                }
+                peerConnection.close();
+                peerConnection = null;
+                console.log("Peer connection closed.");
+            }
+            
+            // Close TTS stream
+            closeTTSStream();
+            
+            audioLevel = 0;
+            isMuted = false;
+            updateButtonState();
+        }
+
+        startButton.addEventListener('click', (event) => {
+            if (event.target.closest('.mute-toggle')) {
+                return;
+            }
+            
+            if (peerConnection && peerConnection.connectionState === 'connected') {
+                console.log("Stop button clicked");
+                stop();
+                
+                // Reset transcript area with placeholder but keep existing data for saving
+                transcriptDiv.innerHTML = `
+                    <div class="transcript-placeholder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                        <h3>Session stopped</h3>
+                        <p>Translation data is still available for saving</p>
+                    </div>
+                `;
+            } else if (!peerConnection || ['new', 'closed', 'failed', 'disconnected'].includes(peerConnection.connectionState)) {
+                console.log("Start button clicked");
+                // Clear previous session data when starting new session
+                transcriptData = [];
+                updateSaveButtonVisibility();
+                setupWebRTC();
+                updateButtonState();
+            }
+        });
+
+        // Add save button event listener
+        saveButton.addEventListener('click', saveTranscript);
+
+        // Initialize TTS status
+        updateTTSStatus();
+    </script>
+</body>
+
+</html>
+                
