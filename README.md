@@ -2,6 +2,10 @@
 
 This project is a real-time, multilingual voice translator that leverages the power of local AI models for speech-to-text, translation, and text-to-speech. It is designed to be a powerful and flexible tool for anyone who needs to communicate across language barriers.
 
+##Demo
+
+https://www.youtube.com/watch?v=2XjPpDcFOgQ
+
 ## Key Features
 
 -   **Real-Time Translation**: Speak in any supported language and hear translations with natural voice synthesis.
